@@ -1,0 +1,2123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#171a20">
+<title>Big Loquendo House IV — Dashboard de Evaluación</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#171a20; --surface:#20252d; --surface-2:#272d36; --surface-3:#303640;
+  --text:#f1f2f4; --muted:#9da5b1; --line:#383f4a;
+  --edit:#c8baff; --dev:#9fd8d4; --creative:#f3c2d8;
+  --accent:#e8d9a9; --danger:#f0a7ad; --success:#a9ddb8; --warning:#e7c78f;
+  --shadow:0 16px 45px rgba(5,8,12,.28); --radius:16px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Lato,system-ui,sans-serif;font-size:14px;line-height:1.45}
+button,input,select,textarea{font:inherit}
+button{cursor:pointer}
+.app{min-height:100vh}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(23,26,32,.94);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topbar-inner{max-width:1500px;margin:auto;padding:14px 20px;display:flex;gap:14px;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:var(--accent);color:#25252a;display:grid;place-items:center;font-weight:900}
+.brand h1{font-size:16px;margin:0;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.brand p{margin:1px 0 0;color:var(--muted);font-size:12px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;align-items:center}
+.sync-control{display:flex;align-items:center;gap:7px;border:1px solid var(--line);background:var(--surface-2);padding:6px 9px;border-radius:10px;font-size:12px;font-weight:800;color:var(--muted)}
+.sync-control select{border:0;background:transparent;color:var(--text);font:inherit;outline:none;cursor:pointer}
+.sync-control select option{background:#20252d;color:#f1f2f4}
+.judge-card.current{border-color:rgba(232,217,169,.55);box-shadow:0 0 0 2px rgba(232,217,169,.06)}
+.judge-card.locked{opacity:.7}
+.btn{border:1px solid var(--line);background:var(--surface-2);color:var(--text);padding:9px 13px;border-radius:10px;font-weight:700;transition:.18s}
+.btn:hover{transform:translateY(-1px);background:var(--surface-3)}
+.btn.primary{background:var(--accent);color:#292a2d;border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btn.small{padding:7px 10px;font-size:12px}
+.container{max-width:1500px;margin:auto;padding:20px}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+.stat .label{color:var(--muted);font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em}
+.stat .value{font-size:26px;font-weight:900;margin-top:5px}
+.stat .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 390px;gap:16px;align-items:start}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+.panel-head{padding:16px;border-bottom:1px solid var(--line);display:flex;gap:12px;align-items:center;justify-content:space-between}
+.panel-head h2{font-size:16px;margin:0}
+.panel-head .muted{color:var(--muted);font-size:12px}
+.filters{display:flex;gap:7px;flex-wrap:wrap}
+.filter{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);padding:7px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.filter.active{color:#25272d;border-color:transparent}
+.filter[data-filter="all"].active{background:var(--accent)}
+.filter[data-filter="edición"].active{background:var(--edit)}
+.filter[data-filter="desarrollo"].active{background:var(--dev)}
+.filter[data-filter="creatividad"].active{background:var(--creative)}
+.searchbar{display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.input,.select,.textarea{width:100%;border:1px solid var(--line);background:#1c2027;color:var(--text);border-radius:10px;padding:10px 11px;outline:none}
+.input:focus,.select:focus,.textarea:focus{border-color:#68717e;box-shadow:0 0 0 3px rgba(232,217,169,.08)}
+.table-wrap{overflow:auto}
+table{width:100%;border-collapse:collapse;min-width:760px}
+th,td{padding:11px 12px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);background:#1d2128;position:sticky;top:0;z-index:2}
+tbody tr{transition:.15s}
+tbody tr:hover{background:#252a32}
+.rank{font-weight:900;color:var(--muted);width:42px}
+.participant{display:flex;align-items:center;gap:10px;min-width:200px}
+.avatar{width:34px;height:34px;border-radius:10px;background:var(--surface-3);display:grid;place-items:center;font-weight:900}
+.pname{font-weight:800}.pmeta{font-size:11px;color:var(--muted);margin-top:1px}
+.score{font-weight:900;font-size:15px}
+.score.edit{color:var(--edit)}.score.dev{color:var(--dev)}.score.creative{color:var(--creative)}
+.total-pill{font-weight:900;padding:5px 8px;border-radius:8px;background:#2d333c}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900}
+.badge.ok{background:rgba(169,221,184,.12);color:var(--success)}
+.badge.pending{background:rgba(231,199,143,.12);color:var(--warning)}
+.badge.no{background:rgba(240,167,173,.12);color:var(--danger)}
+.row-actions{display:flex;gap:5px}
+.icon-btn{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:var(--surface-2);color:var(--text)}
+.side{display:flex;flex-direction:column;gap:16px}
+.preview{aspect-ratio:16/9;background:#14171c;display:grid;place-items:center;position:relative}
+.preview iframe{width:100%;height:100%;border:0}
+.preview-empty{padding:30px;text-align:center;color:var(--muted)}
+.detail{padding:16px}
+.detail-title{display:flex;align-items:start;justify-content:space-between;gap:10px}
+.detail-title h2{margin:0;font-size:20px}.detail-title p{margin:3px 0 0;color:var(--muted);font-size:12px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{padding:5px 8px;border-radius:999px;font-size:11px;font-weight:900}
+.chip.edit{background:rgba(200,186,255,.12);color:var(--edit)}
+.chip.dev{background:rgba(159,216,212,.12);color:var(--dev)}
+.chip.creative{background:rgba(243,194,216,.12);color:var(--creative)}
+.section-title{font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:900;margin:18px 0 9px}
+.judge-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.judge-card{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:10px}
+.judge-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.judge-name{font-weight:900;text-transform:capitalize}
+.judge-scores{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.score-input{width:100%;padding:8px 5px;text-align:center;background:#1c2027;border:1px solid var(--line);color:var(--text);border-radius:8px;min-width:0}
+.score-label{font-size:10px;color:var(--muted);text-align:center;margin-top:3px}
+.note{margin-top:7px}
+.note textarea{min-height:60px;resize:vertical}
+.chart{padding:16px}
+.bar{margin:11px 0}.bar-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}.bar-track{height:8px;background:#343a44;border-radius:99px;overflow:hidden}.bar-fill{height:100%;border-radius:99px}
+.bar-fill.edit{background:var(--edit)}.bar-fill.dev{background:var(--dev)}.bar-fill.creative{background:var(--creative)}.bar-fill.total{background:var(--accent)}
+.top10{padding:0 16px 16px}.top-row{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}.top-row:last-child{border-bottom:0}
+.top-rank{font-weight:900;color:var(--muted)}.top-name{font-weight:800}.top-score{font-weight:900}
+.empty{padding:32px;text-align:center;color:var(--muted)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(10,12,16,.68);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-backdrop.show{display:flex}
+.modal{width:min(760px,100%);max-height:92vh;overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.35)}
+.modal-head{padding:16px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0}
+.modal-body{padding:16px}.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:900;margin-bottom:6px}.field.full{grid-column:1/-1}
+.modal-foot{padding:14px 16px;border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:8px}
+.radio-row{display:flex;gap:7px;flex-wrap:wrap}.radio{position:relative}.radio input{position:absolute;opacity:0}.radio label{display:block;padding:8px 11px;border-radius:9px;background:var(--surface-2);border:1px solid var(--line);font-weight:800;font-size:12px}.radio input:checked+label{background:var(--accent);color:#292a2d;border-color:transparent}
+.toast{position:fixed;right:18px;bottom:18px;background:#2b313a;border:1px solid var(--line);padding:11px 14px;border-radius:10px;box-shadow:var(--shadow);z-index:200;opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:translateY(0)}
+.footer-note{color:var(--muted);font-size:11px;padding:18px 0;text-align:center}
+@media(max-width:1100px){.layout{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:700px){body{font-size:13px}.container{padding:12px}.topbar-inner{padding:11px 12px}.brand p{display:none}.actions .btn:not(.primary){display:none}.stats{grid-template-columns:repeat(2,1fr);gap:8px}.stat{padding:12px}.stat .value{font-size:22px}.panel-head{align-items:flex-start;flex-direction:column}.searchbar{flex-direction:column}.judge-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.modal{border-radius:14px}.side{gap:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark">BL</div>
+      <div>
+        <h1>Big Loquendo House IV — World Re-Tour</h1>
+        <p>Ronda 2 · Panel de evaluación</p>
+      </div>
+    </div>
+    <div class="actions">
+      <label class="sync-control">Juez
+        <select id="judgeSelector" aria-label="Juez actual">
+          <option value="kuser">Kuser</option>
+          <option value="veru">Veru</option>
+          <option value="kase">Kase</option>
+          <option value="lay">Lay</option>
+        </select>
+      </label>
+      <button class="btn" id="resetBtn">Restaurar datos iniciales</button>
+      <button class="btn primary" id="saveBtn">Exportar HTML</button>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+  <section class="stats" id="stats"></section>
+
+  <div class="layout">
+    <section class="panel">
+      <div class="panel-head">
+        <div>
+          <h2>Participantes</h2>
+          <div class="muted" id="resultCount"></div>
+        </div>
+        <div class="filters">
+          <button class="filter active" data-filter="all">Todos</button>
+          <button class="filter" data-filter="edición">Edición</button>
+          <button class="filter" data-filter="desarrollo">Desarrollo</button>
+          <button class="filter" data-filter="creatividad">Creatividad</button>
+        </div>
+      </div>
+      <div class="searchbar">
+        <input class="input" id="search" placeholder="Buscar participante..." autocomplete="off">
+        <select class="select" id="statusFilter" style="max-width:180px">
+          <option value="all">Todos los estados</option>
+          <option value="calificado">Calificado</option>
+          <option value="pendiente">Pendiente</option>
+          <option value="entrego">Entregó</option>
+          <option value="no-entrego">No entregó</option>
+        </select>
+        <button class="btn primary" id="addBtn">+ Añadir participante</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>#</th><th>Participante</th><th>Edición</th><th>Desarrollo</th><th>Creatividad</th><th>Total</th><th>Entrega</th><th>Estado</th><th></th></tr></thead>
+          <tbody id="participantTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <aside class="side">
+      <section class="panel">
+        <div class="panel-head"><div><h2>Previsualizador</h2><div class="muted">Selecciona un participante</div></div></div>
+        <div class="preview" id="preview"><div class="preview-empty">Selecciona un participante para cargar su video.</div></div>
+        <div class="detail" id="detail"><div class="empty">Sin participante seleccionado.</div></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><h2>Ranking · Top 10</h2><div class="muted">Promedio general por participante</div></div></div>
+        <div class="top10" id="top10"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><div><h2>Distribución de evaluación</h2><div class="muted">Promedios de los rubros</div></div></div>
+        <div class="chart" id="chart"></div>
+      </section>
+    </aside>
+  </div>
+  <div class="footer-note">Datos sincronizados con Google Sheets. “Exportar HTML” genera una copia local con los datos actuales embebidos. La hoja de Google es la fuente compartida.</div>
+</main>
+</div>
+
+<div class="modal-backdrop" id="modalBackdrop">
+  <div class="modal">
+    <div class="modal-head"><h3 id="modalTitle">Añadir participante</h3><button type="button" class="icon-btn" id="closeModal">×</button></div>
+    <div class="modal-body">
+      <form id="participantForm">
+        <div class="form-grid">
+          <div class="field"><label>Nombre</label><input class="input" id="fName" required></div>
+          <div class="field"><label>URL del video</label><input class="input" id="fVideo" placeholder="https://www.youtube.com/watch?v=..."></div>
+          <div class="field"><label>Entrega</label><div class="radio-row">
+            <div class="radio"><input type="radio" name="delivered" id="delYes" value="true"><label for="delYes">Entregó</label></div>
+            <div class="radio"><input type="radio" name="delivered" id="delNo" value="false"><label for="delNo">No entregó</label></div>
+          </div></div>
+          <div class="field"><label>Estado general</label><select class="select" id="fStatus"><option value="pendiente">Pendiente</option><option value="calificado">Calificado</option></select></div>
+          <div class="field full"><label>Notas generales</label><textarea class="textarea" id="fGeneralNote" placeholder="Información adicional del participante..."></textarea></div>
+        </div>
+      </form>
+    </div>
+    <div class="modal-foot"><button class="btn danger" id="deleteFromModal">Eliminar participante</button><div style="display:flex;gap:8px"><button class="btn" id="cancelModal">Cancelar</button><button class="btn primary" id="saveParticipant">Guardar participante</button></div></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const INITIAL_DATA = [
+  {
+    "id": "p1",
+    "name": "BakuBaku",
+    "video": "https://www.youtube.com/watch?v=Xb1lJHJ4wGY",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.0,
+        "veru": 6.8,
+        "kase": 7.0,
+        "lay": 8.0
+      },
+      "desarrollo": {
+        "kuser": 8.0,
+        "veru": 7.0,
+        "kase": 7.6,
+        "lay": 8.0
+      },
+      "creatividad": {
+        "kuser": 7.2,
+        "veru": 7.0,
+        "kase": 7.4,
+        "lay": 8.5
+      }
+    }
+  },
+  {
+    "id": "p2",
+    "name": "Alpha_Ksio",
+    "video": "https://www.youtube.com/watch?v=IY0HP7aRD2E",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 4.5,
+        "kase": 5.8,
+        "lay": 6.5
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 5.0,
+        "kase": 6.0,
+        "lay": 5.5
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 6.0,
+        "kase": 6.7,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p3",
+    "name": "La \"U\" de CJ.",
+    "video": "https://www.youtube.com/watch?v=WQ7sR4HiMVE",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 4.0,
+        "kase": 4.0,
+        "lay": 6.0
+      },
+      "desarrollo": {
+        "kuser": 6.0,
+        "veru": 4.2,
+        "kase": 5.0,
+        "lay": 5.5
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 5.0,
+        "kase": 4.0,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p4",
+    "name": "Yuzu ♥",
+    "video": "https://www.youtube.com/watch?v=56828XkRHhg",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.0,
+        "veru": 6.2,
+        "kase": 6.0,
+        "lay": 7.6
+      },
+      "desarrollo": {
+        "kuser": 6.4,
+        "veru": 5.0,
+        "kase": 5.0,
+        "lay": 6.6
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 5.8,
+        "kase": 6.2,
+        "lay": 8.1
+      }
+    }
+  },
+  {
+    "id": "p5",
+    "name": "Tenma Loquendo",
+    "video": "https://youtu.be/_cTQXA7BhiA?si=ikT1tz3LMk4VrKVU",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.7,
+        "veru": 5.2,
+        "kase": 5.0,
+        "lay": 6.5
+      },
+      "desarrollo": {
+        "kuser": 6.2,
+        "veru": 5.0,
+        "kase": 6.4,
+        "lay": 6.0
+      },
+      "creatividad": {
+        "kuser": 6.0,
+        "veru": 5.6,
+        "kase": 5.0,
+        "lay": 6.0
+      }
+    }
+  },
+  {
+    "id": "p6",
+    "name": "Curex ツ",
+    "video": "https://www.youtube.com/watch?v=cek3dlJH1zM",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 4.5,
+        "kase": 4.0,
+        "lay": 6.0
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 4.0,
+        "kase": 4.0,
+        "lay": 6.0
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 3.9,
+        "kase": 4.0,
+        "lay": 6.0
+      }
+    }
+  },
+  {
+    "id": "p7",
+    "name": "heaven stone",
+    "video": "https://www.youtube.com/watch?v=msdTqeXgGRw",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 3.0,
+        "kase": 3.6,
+        "lay": 5.5
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 3.8,
+        "kase": 3.5,
+        "lay": 5.5
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 3.4,
+        "kase": 4.0,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p8",
+    "name": "T E R M O R",
+    "video": "https://www.youtube.com/watch?v=Oe6O6TgqFRA",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.0,
+        "veru": 6.2,
+        "kase": 6.7,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 6.0,
+        "veru": 6.5,
+        "kase": 6.0,
+        "lay": 6.5
+      },
+      "creatividad": {
+        "kuser": 6.0,
+        "veru": 5.0,
+        "kase": 5.5,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p9",
+    "name": "L.JuryRoald",
+    "video": "https://www.youtube.com/watch?v=C2jroYqJN84",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.5,
+        "veru": 6.0,
+        "kase": 6.0,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 8.0,
+        "veru": 8.1,
+        "kase": 7.7,
+        "lay": 8.5
+      },
+      "creatividad": {
+        "kuser": 8.0,
+        "veru": 8.0,
+        "kase": 7.8,
+        "lay": 8.0
+      }
+    }
+  },
+  {
+    "id": "p10",
+    "name": "Nezom S.Killer",
+    "video": "https://www.youtube.com/watch?v=-J5DdgonvMI",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.5,
+        "veru": 7.2,
+        "kase": 7.0,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 7.0,
+        "veru": 6.3,
+        "kase": 6.5,
+        "lay": 7.0
+      },
+      "creatividad": {
+        "kuser": 7.5,
+        "veru": 7.0,
+        "kase": 6.8,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p11",
+    "name": "Aritmell Nouzen",
+    "video": "https://www.youtube.com/watch?v=pdAqqXY_vZs",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.0,
+        "veru": 8.0,
+        "kase": 7.0,
+        "lay": 8.0
+      },
+      "desarrollo": {
+        "kuser": 7.5,
+        "veru": 7.6,
+        "kase": 7.0,
+        "lay": 7.0
+      },
+      "creatividad": {
+        "kuser": 7.5,
+        "veru": 7.6,
+        "kase": 7.0,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p12",
+    "name": "Mirai77",
+    "video": "https://www.youtube.com/watch?v=cpOSAc8tTXg",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.0,
+        "veru": 6.8,
+        "kase": 7.1,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 8.0,
+        "veru": 7.0,
+        "kase": 7.3,
+        "lay": 7.0
+      },
+      "creatividad": {
+        "kuser": 8.5,
+        "veru": 6.7,
+        "kase": 7.5,
+        "lay": 7.5
+      }
+    }
+  },
+  {
+    "id": "p13",
+    "name": "El Buen Compa Gaspar",
+    "video": "https://www.youtube.com/watch?v=ee_qZ6PItz4",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.5,
+        "veru": 6.9,
+        "kase": 5.0,
+        "lay": 6.0
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 5.0,
+        "kase": 4.0,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 6.0,
+        "veru": 6.7,
+        "kase": 4.5,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p14",
+    "name": "JeffTheKiller66",
+    "video": "https://www.youtube.com/watch?v=GrrGJ_XSelk",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 3.0,
+        "kase": 4.0,
+        "lay": 5.5
+      },
+      "desarrollo": {
+        "kuser": 5.5,
+        "veru": 4.2,
+        "kase": 5.0,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 6.0,
+        "veru": 5.5,
+        "kase": 5.0,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p15",
+    "name": "Jokeyllite",
+    "video": "https://www.youtube.com/watch?v=iuLAqgSnYjc",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.7,
+        "veru": 6.0,
+        "kase": 6.8,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 7.5,
+        "veru": 7.0,
+        "kase": 7.2,
+        "lay": 7.0
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 6.8,
+        "kase": 6.8,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p16",
+    "name": "Cronoxxonix",
+    "video": "https://www.youtube.com/watch?v=gCcUQwLE0vM",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.8,
+        "veru": 9.0,
+        "kase": 7.5,
+        "lay": 8.0
+      },
+      "desarrollo": {
+        "kuser": 9.0,
+        "veru": 8.9,
+        "kase": 8.0,
+        "lay": 8.0
+      },
+      "creatividad": {
+        "kuser": 8.5,
+        "veru": 8.7,
+        "kase": 8.2,
+        "lay": 8.0
+      }
+    }
+  },
+  {
+    "id": "p17",
+    "name": "Thunder Shadow",
+    "video": "https://www.youtube.com/watch?v=MpGfQQkAAMA",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 3.5,
+        "kase": 4.0,
+        "lay": 5.5
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 4.0,
+        "kase": 3.5,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 4.0,
+        "kase": 4.2,
+        "lay": 5.0
+      }
+    }
+  },
+  {
+    "id": "p18",
+    "name": "The Akumix",
+    "video": "https://www.youtube.com/watch?v=UI1C8iTucLw",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.5,
+        "veru": 6.5,
+        "kase": 6.0,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 6.0,
+        "veru": 5.0,
+        "kase": 5.2,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 5.8,
+        "kase": 5.0,
+        "lay": 6.0
+      }
+    }
+  },
+  {
+    "id": "p19",
+    "name": "Kenta Dragneel",
+    "video": "https://www.youtube.com/watch?v=IL3ZSYfqrVA",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.5,
+        "veru": 7.0,
+        "kase": 7.1,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 5.7,
+        "veru": 5.0,
+        "kase": 5.5,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 6.9,
+        "veru": 6.5,
+        "kase": 6.7,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p20",
+    "name": "Spido",
+    "video": "https://www.youtube.com/watch?v=YIPHw94Ug3g",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.0,
+        "veru": 6.9,
+        "kase": 6.8,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 4.1,
+        "veru": 3.9,
+        "kase": 4.0,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 6.2,
+        "veru": 7.0,
+        "kase": 6.5,
+        "lay": 7.5
+      }
+    }
+  },
+  {
+    "id": "p21",
+    "name": "Sonidy3510",
+    "video": "https://www.youtube.com/watch?v=dcwls0hLiGg",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 2.0,
+        "veru": 1.8,
+        "kase": 1.5,
+        "lay": 3.0
+      },
+      "desarrollo": {
+        "kuser": 0.5,
+        "veru": 1.5,
+        "kase": 0.2,
+        "lay": 1.0
+      },
+      "creatividad": {
+        "kuser": 1.0,
+        "veru": 2.0,
+        "kase": 0.5,
+        "lay": 2.0
+      }
+    }
+  },
+  {
+    "id": "p22",
+    "name": "Just A Normal Gal",
+    "video": "https://www.youtube.com/watch?v=4d6qlFOTZXg",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.5,
+        "veru": 7.3,
+        "kase": 7.2,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 3.9,
+        "kase": 4.2,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 5.5,
+        "veru": 6.0,
+        "kase": 5.0,
+        "lay": 6.0
+      }
+    }
+  },
+  {
+    "id": "p23",
+    "name": "IzanagiPotato PC",
+    "video": "https://youtu.be/Zrkf_jN8tcI?si=sg3hdZWhNRIO4rWA",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.0,
+        "veru": 6.5,
+        "kase": 6.5,
+        "lay": 7.2
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 5.0,
+        "kase": 4.8,
+        "lay": 5.4
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 5.0,
+        "kase": 5.0,
+        "lay": 5.5
+      }
+    }
+  },
+  {
+    "id": "p24",
+    "name": "Solfish 115",
+    "video": "https://www.youtube.com/watch?v=k4qsmXOA2ZA",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.8,
+        "veru": 7.0,
+        "kase": 7.2,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 6.8,
+        "veru": 6.0,
+        "kase": 6.1,
+        "lay": 6.5
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 7.0,
+        "kase": 7.0,
+        "lay": 7.0
+      }
+    }
+  },
+  {
+    "id": "p25",
+    "name": "Mike S",
+    "video": "https://youtu.be/baQ7iw4eLno",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.0,
+        "veru": 6.8,
+        "kase": 7.0,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 9.5,
+        "veru": 8.0,
+        "kase": 7.5,
+        "lay": 8.5
+      },
+      "creatividad": {
+        "kuser": 8.8,
+        "veru": 7.2,
+        "kase": 8.0,
+        "lay": 9.0
+      }
+    }
+  },
+  {
+    "id": "p26",
+    "name": "Gintox97",
+    "video": "https://www.youtube.com/watch?v=Lt5aybDKtf0",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 4.5,
+        "kase": 5.1,
+        "lay": 6.5
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 5.0,
+        "kase": 4.8,
+        "lay": 5.0
+      },
+      "creatividad": {
+        "kuser": 4.0,
+        "veru": 4.0,
+        "kase": 3.0,
+        "lay": 4.5
+      }
+    }
+  },
+  {
+    "id": "p27",
+    "name": "Daneiru Dant",
+    "video": "https://www.youtube.com/watch?v=M7Odkgv4FTc",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.0,
+        "veru": 7.0,
+        "kase": 7.2,
+        "lay": 7.5
+      },
+      "desarrollo": {
+        "kuser": 8.5,
+        "veru": 7.0,
+        "kase": 7.7,
+        "lay": 7.2
+      },
+      "creatividad": {
+        "kuser": 8.5,
+        "veru": 8.0,
+        "kase": 7.8,
+        "lay": 7.6
+      }
+    }
+  },
+  {
+    "id": "p28",
+    "name": "Gatochadmiau",
+    "video": "https://www.youtube.com/watch?v=4YSeM7SbDac",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 4.0,
+        "kase": 5.0,
+        "lay": 5.5
+      },
+      "desarrollo": {
+        "kuser": 2.0,
+        "veru": 1.8,
+        "kase": 1.5,
+        "lay": 3.0
+      },
+      "creatividad": {
+        "kuser": 6.0,
+        "veru": 5.7,
+        "kase": 5.0,
+        "lay": 5.5
+      }
+    }
+  },
+  {
+    "id": "p29",
+    "name": "La Bitácora del Medina",
+    "video": "https://www.youtube.com/watch?v=lW4l5oKtN9U",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.0,
+        "veru": 5.0,
+        "kase": 6.0,
+        "lay": 7.0
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 6.5,
+        "kase": 5.0,
+        "lay": 5.5
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 6.9,
+        "kase": 6.3,
+        "lay": 6.5
+      }
+    }
+  },
+  {
+    "id": "p30",
+    "name": "Smooth",
+    "video": "https://www.youtube.com/watch?v=E-rlhuZzPJ4",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.4,
+        "veru": 7.1,
+        "kase": 7.5,
+        "lay": 7.3
+      },
+      "desarrollo": {
+        "kuser": 8.2,
+        "veru": 8.5,
+        "kase": 7.5,
+        "lay": 7.8
+      },
+      "creatividad": {
+        "kuser": 7.9,
+        "veru": 8.9,
+        "kase": 7.7,
+        "lay": 8.0
+      }
+    }
+  },
+  {
+    "id": "p31",
+    "name": "Rudeus Kendo",
+    "video": "https://youtu.be/OVMPov0Lemo",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 3.0,
+        "kase": 3.7,
+        "lay": 4.0
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 1.5,
+        "kase": 2.0,
+        "lay": 3.0
+      },
+      "creatividad": {
+        "kuser": 3.4,
+        "veru": 3.0,
+        "kase": 2.0,
+        "lay": 3.0
+      }
+    }
+  },
+  {
+    "id": "p32",
+    "name": "Impert",
+    "video": "https://www.youtube.com/watch?v=V068CEuBqI8",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.9,
+        "veru": 8.0,
+        "kase": 7.6,
+        "lay": 7.8
+      },
+      "desarrollo": {
+        "kuser": 7.2,
+        "veru": 7.5,
+        "kase": 7.0,
+        "lay": 7.1
+      },
+      "creatividad": {
+        "kuser": 8.0,
+        "veru": 9.0,
+        "kase": 7.8,
+        "lay": 8.2
+      }
+    }
+  },
+  {
+    "id": "p33",
+    "name": "Guermhukkory",
+    "video": "https://www.youtube.com/watch?v=No3y6FcXZnk",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 6.5,
+        "veru": 5.0,
+        "kase": 5.8,
+        "lay": 6.4
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 4.3,
+        "kase": 3.7,
+        "lay": 4.2
+      },
+      "creatividad": {
+        "kuser": 6.9,
+        "veru": 6.0,
+        "kase": 6.5,
+        "lay": 6.6
+      }
+    }
+  },
+  {
+    "id": "p34",
+    "name": "Sunset",
+    "video": "https://www.youtube.com/watch?v=WGnc_IPgYe4",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 8.0,
+        "veru": 8.9,
+        "kase": 7.8,
+        "lay": 9.0
+      },
+      "desarrollo": {
+        "kuser": 7.7,
+        "veru": 8.0,
+        "kase": 7.0,
+        "lay": 8.0
+      },
+      "creatividad": {
+        "kuser": 7.5,
+        "veru": 7.5,
+        "kase": 6.9,
+        "lay": 8.0
+      }
+    }
+  },
+  {
+    "id": "p35",
+    "name": "BlackFlamer19",
+    "video": "https://www.youtube.com/watch?v=uxQFFMIUCjY",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 4.0,
+        "kase": 4.3,
+        "lay": 5.0
+      },
+      "desarrollo": {
+        "kuser": 4.3,
+        "veru": 5.0,
+        "kase": 4.0,
+        "lay": 4.0
+      },
+      "creatividad": {
+        "kuser": 4.5,
+        "veru": 4.9,
+        "kase": 3.7,
+        "lay": 5.0
+      }
+    }
+  },
+  {
+    "id": "p36",
+    "name": "El Zaiko Southeast",
+    "video": "https://www.youtube.com/watch?v=ynTB7frcvXg",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 7.7,
+        "veru": 7.0,
+        "kase": 7.4,
+        "lay": 7.2
+      },
+      "desarrollo": {
+        "kuser": 6.5,
+        "veru": 7.8,
+        "kase": 6.0,
+        "lay": 6.4
+      },
+      "creatividad": {
+        "kuser": 7.0,
+        "veru": 8.0,
+        "kase": 6.0,
+        "lay": 6.7
+      }
+    }
+  },
+  {
+    "id": "p37",
+    "name": "Mask",
+    "video": "https://www.youtube.com/watch?v=mHGZoZXUGO0",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.0,
+        "veru": 4.0,
+        "kase": 4.3,
+        "lay": 5.5
+      },
+      "desarrollo": {
+        "kuser": 2.0,
+        "veru": 1.0,
+        "kase": 1.5,
+        "lay": 2.0
+      },
+      "creatividad": {
+        "kuser": 2.0,
+        "veru": 1.5,
+        "kase": 1.5,
+        "lay": 3.0
+      }
+    }
+  },
+  {
+    "id": "p38",
+    "name": "Goffyruto",
+    "video": "https://www.youtube.com/watch?v=uh6g21ikbcE",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 4.0,
+        "veru": 2.0,
+        "kase": 3.0,
+        "lay": 4.0
+      },
+      "desarrollo": {
+        "kuser": 4.0,
+        "veru": 2.5,
+        "kase": 3.2,
+        "lay": 3.0
+      },
+      "creatividad": {
+        "kuser": 3.0,
+        "veru": 2.8,
+        "kase": 2.6,
+        "lay": 4.0
+      }
+    }
+  },
+  {
+    "id": "p39",
+    "name": "Alvarox",
+    "video": "https://www.youtube.com/watch?v=KVH0OZ4rY1I",
+    "delivered": true,
+    "status": "calificado",
+    "notes": {
+      "kuser": "",
+      "veru": "",
+      "kase": "",
+      "lay": ""
+    },
+    "judgeStatus": {
+      "kuser": "calificado",
+      "veru": "calificado",
+      "kase": "calificado",
+      "lay": "calificado"
+    },
+    "scores": {
+      "edición": {
+        "kuser": 5.5,
+        "veru": 3.0,
+        "kase": 3.7,
+        "lay": 4.0
+      },
+      "desarrollo": {
+        "kuser": 5.0,
+        "veru": 4.5,
+        "kase": 4.0,
+        "lay": 4.2
+      },
+      "creatividad": {
+        "kuser": 5.0,
+        "veru": 4.8,
+        "kase": 3.5,
+        "lay": 4.5
+      }
+    }
+  }
+];
+const JUDGES = ["kuser","veru","kase","lay"];
+const CATEGORIES = ["edición","desarrollo","creatividad"];
+const LS_KEY = "blh4_round2_dashboard_v2";
+const API_URL = "https://script.google.com/macros/s/AKfycbx62yUqOtspvCDKHMKcbmFyTV7uJMgDWvV6gZpZjPkuol6DYvuWhDeTFQasTvTKEmN1Zw/exec";
+let data = loadData();
+let selectedId = data[0]?.id || null;
+let activeFilter = "all";
+let editingId = null;
+let currentJudge = localStorage.getItem("blh4_current_judge") || "kuser";
+let serverRevision = null;
+let remoteLoaded = false;
+let pollTimer = null;
+const saveTimers = new Map();
+
+function deepClone(x){ return JSON.parse(JSON.stringify(x)); }
+function normalizeParticipant(p, i){
+  const q = {
+    id: p.id || `p${Date.now()}_${i}`,
+    name: p.name || `Participante ${i+1}`,
+    video: p.video || "",
+    delivered: p.delivered !== false,
+    status: p.status || "pendiente",
+    generalNote: p.generalNote || "",
+    notes: p.notes || {},
+    judgeStatus: p.judgeStatus || {},
+    scores: p.scores || {}
+  };
+  JUDGES.forEach(j => { q.notes[j] ??= ""; q.judgeStatus[j] ??= "pendiente"; });
+  CATEGORIES.forEach(c => { q.scores[c] ??= {}; JUDGES.forEach(j => q.scores[c][j] ??= null); });
+  return q;
+}
+function loadData(){
+  try{
+    const saved = localStorage.getItem(LS_KEY);
+    if(saved) return JSON.parse(saved).map(normalizeParticipant);
+  }catch(e){}
+  return deepClone(INITIAL_DATA).map(normalizeParticipant);
+}
+function cacheData(){
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(data)); }catch(e){}
+}
+function postToApi(payload){
+  const body = "payload=" + encodeURIComponent(JSON.stringify(payload));
+  try{
+    if(navigator.sendBeacon){
+      const blob = new Blob([body], {type:"application/x-www-form-urlencoded;charset=UTF-8"});
+      navigator.sendBeacon(API_URL, blob);
+      return;
+    }
+  }catch(e){}
+  fetch(API_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"}, body})
+    .catch(()=>{});
+}
+function scheduleSave(p){
+  if(!p?.id) return;
+  clearTimeout(saveTimers.get(p.id));
+  const timer=setTimeout(()=>{
+    saveTimers.delete(p.id);
+    postToApi({action:"saveParticipant", participant:p, updatedBy:currentJudge});
+    cacheData();
+    showToast("Guardado en Google Sheets");
+  },450);
+  saveTimers.set(p.id,timer);
+}
+function saveParticipantNow(p){
+  if(!p?.id) return;
+  clearTimeout(saveTimers.get(p.id));
+  saveTimers.delete(p.id);
+  postToApi({action:"saveParticipant", participant:p, updatedBy:currentJudge});
+  cacheData();
+  showToast("Guardado en Google Sheets");
+}
+function deleteParticipantRemote(id){ postToApi({action:"deleteParticipant", participantId:id, updatedBy:currentJudge}); }
+function seedInitialData(){
+  // La carga inicial actual es pequeña (~18 KB de JSON), así que se envía en una sola solicitud.
+  postToApi({action:"seedParticipants", participants:data, updatedBy:currentJudge});
+}
+function jsonpGet(params={}){
+  return new Promise((resolve,reject)=>{
+    const callback="__blh4_cb_"+Date.now()+"_"+Math.random().toString(36).slice(2);
+    const script=document.createElement("script");
+    const query=new URLSearchParams({...params,callback,_:Date.now()});
+    let done=false;
+    const cleanup=()=>{done=true;delete window[callback];script.remove();clearTimeout(timer);};
+    const timer=setTimeout(()=>{cleanup();reject(new Error("Tiempo de espera agotado"));},12000);
+    window[callback]=(payload)=>{cleanup();resolve(payload);};
+    script.onerror=()=>{cleanup();reject(new Error("No se pudo conectar con Google Apps Script"));};
+    script.src=API_URL+"?"+query.toString();
+    document.body.appendChild(script);
+  });
+}
+async function loadRemoteData(showConnectionToast=false){
+  try{
+    const result=await jsonpGet({action:"get"});
+    if(!result?.ok) throw new Error(result?.error||"Respuesta inválida");
+    serverRevision=String(result.revision??"");
+    const remote=(result.data||[]).map(normalizeParticipant);
+    remoteLoaded=true;
+    if(remote.length){
+      data=remote;
+      if(!data.some(x=>x.id===selectedId)) selectedId=data[0]?.id||null;
+      cacheData();
+      render();
+      if(showConnectionToast) showToast("Conectado a Google Sheets");
+    }else{
+      seedInitialData();
+      cacheData();
+      if(showConnectionToast) showToast("Google Sheets vacío: cargando datos iniciales");
+    }
+  }catch(e){
+    if(showConnectionToast) showToast("Sin conexión: usando copia local");
+  }
+}
+async function pollRemoteData(){
+  try{
+    const result=await jsonpGet({action:"get"});
+    if(!result?.ok) return;
+    const rev=String(result.revision??"");
+    if(serverRevision!==null && rev===serverRevision) return;
+    serverRevision=rev;
+    const remote=(result.data||[]).map(normalizeParticipant);
+    if(!remote.length) return;
+    const active=document.activeElement;
+    const editingField=active && (active.matches("input,textarea,select") && active.closest("#detail"));
+    data=remote;
+    if(!data.some(x=>x.id===selectedId)) selectedId=data[0]?.id||null;
+    cacheData();
+    if(!editingField) render();
+    else renderStats(),renderTable(),renderTop10(),renderChart();
+  }catch(e){}
+}
+function startPolling(){
+  clearInterval(pollTimer);
+  pollTimer=setInterval(pollRemoteData,2000);
+}
+
+function avg(arr){
+  const nums = arr.map(Number).filter(Number.isFinite);
+  return nums.length ? nums.reduce((a,b)=>a+b,0)/nums.length : 0;
+}
+function categoryAvg(p,c){
+  return avg(JUDGES.map(j=>p.scores?.[c]?.[j]));
+}
+function totalAvg(p){
+  return avg(CATEGORIES.map(c=>categoryAvg(p,c)).filter(v=>v>0));
+}
+function judgeAvg(p,j){
+  return avg(CATEGORIES.map(c=>p.scores?.[c]?.[j]));
+}
+function youtubeId(url){
+  if(!url) return "";
+  const m = String(url).match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([^?&/]+)/i);
+  return m ? m[1] : "";
+}
+function esc(s){
+  return String(s ?? "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+}
+function initials(name){ return String(name).trim().split(/\s+/).slice(0,2).map(x=>x[0]).join("").toUpperCase() || "?"; }
+function statusBadge(p){
+  return p.status==="calificado" ? '<span class="badge ok">● Calificado</span>' : '<span class="badge pending">● Pendiente</span>';
+}
+function deliveryBadge(p){
+  return p.delivered ? '<span class="badge ok">Entregó</span>' : '<span class="badge no">No entregó</span>';
+}
+function filtered(){
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const sf = document.getElementById("statusFilter").value;
+  return data.filter(p=>{
+    const searchOk = !q || p.name.toLowerCase().includes(q);
+    const filterOk = activeFilter==="all" || categoryAvg(p,activeFilter)>0;
+    let statusOk = true;
+    if(sf==="calificado" || sf==="pendiente") statusOk=p.status===sf;
+    if(sf==="entrego") statusOk=p.delivered===true;
+    if(sf==="no-entrego") statusOk=p.delivered===false;
+    return searchOk && filterOk && statusOk;
+  });
+}
+function render(){
+  renderStats(); renderTable(); renderDetail(); renderTop10(); renderChart();
+}
+function renderStats(){
+  const qualified=data.filter(p=>p.status==="calificado").length;
+  const delivered=data.filter(p=>p.delivered).length;
+  const pending=data.length-qualified;
+  const top=data.filter(p=>p.delivered).map(totalAvg).filter(Boolean);
+  const overall=avg(top);
+  document.getElementById("stats").innerHTML=`
+    <div class="stat"><div class="label">Participantes</div><div class="value">${data.length}</div><div class="sub">Total registrado</div></div>
+    <div class="stat"><div class="label">Entregaron</div><div class="value">${delivered}</div><div class="sub">${data.length?Math.round(delivered/data.length*100):0}% del total</div></div>
+    <div class="stat"><div class="label">Calificados</div><div class="value">${qualified}</div><div class="sub">${data.length?Math.round(qualified/data.length*100):0}% completado</div></div>
+    <div class="stat"><div class="label">Pendientes</div><div class="value">${pending}</div><div class="sub">Requieren revisión</div></div>
+    <div class="stat"><div class="label">Promedio</div><div class="value">${overall?overall.toFixed(2):"—"}</div><div class="sub">Sobre 10</div></div>`;
+}
+function renderTable(){
+  const list=filtered().sort((a,b)=>totalAvg(b)-totalAvg(a));
+  document.getElementById("resultCount").textContent=`Mostrando ${list.length} de ${data.length}`;
+  const body=document.getElementById("participantTable");
+  if(!list.length){ body.innerHTML='<tr><td colspan="9" class="empty">No hay participantes que coincidan con el filtro.</td></tr>'; return; }
+  body.innerHTML=list.map((p,i)=>`
+    <tr data-id="${esc(p.id)}" style="cursor:pointer">
+      <td class="rank">${i+1}</td>
+      <td><div class="participant"><div class="avatar">${esc(initials(p.name))}</div><div><div class="pname">${esc(p.name)}</div><div class="pmeta">${youtubeId(p.video)?'Video disponible':'Sin video'}</div></div></div></td>
+      <td><span class="score edit">${categoryAvg(p,"edición")?categoryAvg(p,"edición").toFixed(2):"—"}</span></td>
+      <td><span class="score dev">${categoryAvg(p,"desarrollo")?categoryAvg(p,"desarrollo").toFixed(2):"—"}</span></td>
+      <td><span class="score creative">${categoryAvg(p,"creatividad")?categoryAvg(p,"creatividad").toFixed(2):"—"}</span></td>
+      <td><span class="total-pill">${totalAvg(p)?totalAvg(p).toFixed(2):"—"}</span></td>
+      <td>${deliveryBadge(p)}</td>
+      <td>${statusBadge(p)}</td>
+      <td><div class="row-actions"><button type="button" class="icon-btn edit-btn" title="Editar">✎</button><button type="button" class="icon-btn del-btn" title="Eliminar">⌫</button></div></td>
+    </tr>`).join("");
+  body.querySelectorAll("tr[data-id]").forEach(tr=>{
+    tr.addEventListener("click", e=>{
+      const id=tr.dataset.id;
+      if(e.target.closest(".edit-btn")){ e.preventDefault(); e.stopPropagation(); openModal(id); return; }
+      if(e.target.closest(".del-btn")){ e.preventDefault(); e.stopPropagation(); deleteParticipant(id); return; }
+      selectedId=id; renderDetail();
+    });
+  });
+}
+function renderDetail(){
+  const p=data.find(x=>x.id===selectedId);
+  const preview=document.getElementById("preview");
+  const detail=document.getElementById("detail");
+  if(!p){preview.innerHTML='<div class="preview-empty">Selecciona un participante para cargar su video.</div>';detail.innerHTML='<div class="empty">Sin participante seleccionado.</div>';return;}
+  const yid=youtubeId(p.video);
+  preview.innerHTML=yid?`<iframe src="https://www.youtube.com/embed/${encodeURIComponent(yid)}" title="Video de ${esc(p.name)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`:`<div class="preview-empty">No hay un enlace de YouTube válido.</div>`;
+  detail.innerHTML=`
+    <div class="detail-title"><div><h2>${esc(p.name)}</h2><p>${esc(p.video || "Sin URL de video")}</p></div><button class="btn small" id="editCurrent">Editar</button></div>
+    <div class="chips"><span class="chip edit">Edición ${categoryAvg(p,"edición").toFixed(2)}</span><span class="chip dev">Desarrollo ${categoryAvg(p,"desarrollo").toFixed(2)}</span><span class="chip creative">Creatividad ${categoryAvg(p,"creatividad").toFixed(2)}</span></div>
+    <div class="section-title">Evaluación por juez</div>
+    <div class="judge-grid">
+      ${JUDGES.map(j=>`
+      <div class="judge-card ${j===currentJudge?"current":"locked"}">
+        <div class="judge-head"><span class="judge-name">${esc(j)}</span>
+          <select class="select judge-status" data-judge="${j}" style="width:auto;padding:6px 8px;font-size:11px" ${j!==currentJudge?"disabled":""}>
+            <option value="calificado" ${p.judgeStatus[j]==="calificado"?"selected":""}>Calificado</option>
+            <option value="pendiente" ${p.judgeStatus[j]!=="calificado"?"selected":""}>Pendiente</option>
+          </select>
+        </div>
+        <div class="judge-scores">
+          ${CATEGORIES.map(c=>`<div><input class="score-input" type="number" min="0" max="10" step="0.1" data-category="${c}" data-judge="${j}" value="${p.scores[c][j] ?? ""}" aria-label="${c} ${j}" ${j!==currentJudge?"disabled":""}><div class="score-label">${c[0].toUpperCase()+c.slice(1)}</div></div>`).join("")}
+        </div>
+        <div class="note"><textarea class="textarea judge-note" data-judge="${j}" placeholder="Comentario de ${esc(j)}..." ${j!==currentJudge?"disabled":""}>${esc(p.notes[j])}</textarea></div>
+        <div style="margin-top:7px;color:var(--muted);font-size:11px">Promedio juez: <strong style="color:var(--text)">${judgeAvg(p,j)?judgeAvg(p,j).toFixed(2):"—"}</strong></div>
+      </div>`).join("")}
+    </div>
+    <div class="section-title">Estado</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      ${deliveryBadge(p)} ${statusBadge(p)}
+      <button class="btn small" id="toggleDelivery">${p.delivered?"Marcar no entregó":"Marcar entregó"}</button>
+      <button class="btn small" id="toggleStatus">${p.status==="calificado"?"Marcar pendiente":"Marcar calificado"}</button>
+    </div>
+    <div class="section-title">Nota general</div>
+    <textarea class="textarea" id="generalNote" placeholder="Notas generales del participante...">${esc(p.generalNote)}</textarea>`;
+  detail.querySelectorAll(".score-input").forEach(input=>{
+    input.addEventListener("change",()=>{
+      const c=input.dataset.category,j=input.dataset.judge;
+      let v=input.value===""?null:Number(input.value);
+      if(v!==null) v=Math.max(0,Math.min(10,v));
+      p.scores[c][j]=v;
+      scheduleSave(p); render();
+    });
+  });
+  detail.querySelectorAll(".judge-status").forEach(sel=>sel.addEventListener("change",()=>{
+    p.judgeStatus[sel.dataset.judge]=sel.value;
+    if(JUDGES.every(j=>p.judgeStatus[j]==="calificado")) p.status="calificado";
+    scheduleSave(p); render();
+  }));
+  detail.querySelectorAll(".judge-note").forEach(t=>t.addEventListener("input",()=>{
+    p.notes[t.dataset.judge]=t.value; scheduleSave(p);
+  }));
+  document.getElementById("generalNote").addEventListener("input",e=>{p.generalNote=e.target.value;scheduleSave(p);});
+  document.getElementById("editCurrent").addEventListener("click",()=>openModal(p.id));
+  document.getElementById("toggleDelivery").addEventListener("click",()=>{p.delivered=!p.delivered; saveParticipantNow(p); render();});
+  document.getElementById("toggleStatus").addEventListener("click",()=>{p.status=p.status==="calificado"?"pendiente":"calificado"; saveParticipantNow(p); render();});
+}
+function renderTop10(){
+  const list=[...data].sort((a,b)=>totalAvg(b)-totalAvg(a)).slice(0,10);
+  document.getElementById("top10").innerHTML=list.length?list.map((p,i)=>`<div class="top-row" data-id="${p.id}" style="cursor:pointer"><div class="top-rank">${String(i+1).padStart(2,"0")}</div><div class="top-name">${esc(p.name)}</div><div class="top-score">${totalAvg(p)?totalAvg(p).toFixed(2):"—"}</div></div>`).join(""):'<div class="empty">Sin participantes.</div>';
+  document.querySelectorAll(".top-row").forEach(x=>x.addEventListener("click",()=>{selectedId=x.dataset.id;renderDetail();window.scrollTo({top:0,behavior:"smooth"});}));
+}
+function renderChart(){
+  const avgs=CATEGORIES.map(c=>categoryAvgAll(c));
+  const overall=avg(avgs);
+  document.getElementById("chart").innerHTML=`
+    ${CATEGORIES.map((c,i)=>`<div class="bar"><div class="bar-head"><span>${c[0].toUpperCase()+c.slice(1)}</span><strong>${avgs[i]?avgs[i].toFixed(2):"—"}</strong></div><div class="bar-track"><div class="bar-fill ${i===0?"edit":i===1?"dev":"creative"}" style="width:${Math.min(100,(avgs[i]||0)*10)}%"></div></div></div>`).join("")}
+    <div class="bar"><div class="bar-head"><span>Promedio general</span><strong>${overall?overall.toFixed(2):"—"}</strong></div><div class="bar-track"><div class="bar-fill total" style="width:${Math.min(100,overall*10)}%"></div></div></div>`;
+}
+function categoryAvgAll(c){ return avg(data.map(p=>categoryAvg(p,c)).filter(v=>v>0)); }
+
+function openModal(id=null){
+  editingId=id;
+  const p=id?data.find(x=>x.id===id):null;
+  document.getElementById("modalTitle").textContent=p?"Editar participante":"Añadir participante";
+  document.getElementById("fName").value=p?.name||"";
+  document.getElementById("fVideo").value=p?.video||"";
+  document.getElementById(p?.delivered===false?"delNo":"delYes").checked=true;
+  document.getElementById("fStatus").value=p?.status||"pendiente";
+  document.getElementById("fGeneralNote").value=p?.generalNote||"";
+  document.getElementById("deleteFromModal").style.visibility=p?"visible":"hidden";
+  document.getElementById("modalBackdrop").classList.add("show");
+  setTimeout(()=>document.getElementById("fName").focus(),50);
+}
+function closeModal(){document.getElementById("modalBackdrop").classList.remove("show");editingId=null;}
+function saveModal(){
+  const name=document.getElementById("fName").value.trim();
+  if(!name){alert("El nombre es obligatorio.");return;}
+  const delivered=document.querySelector('input[name="delivered"]:checked')?.value!=="false";
+  const status=document.getElementById("fStatus").value;
+  if(editingId){
+    const p=data.find(x=>x.id===editingId);
+    Object.assign(p,{name,video:document.getElementById("fVideo").value.trim(),delivered,status,generalNote:document.getElementById("fGeneralNote").value});
+    selectedId=p.id;
+    saveParticipantNow(p);
+  }else{
+    const id=`p${Date.now()}`;
+    const p=normalizeParticipant({id,name,video:document.getElementById("fVideo").value.trim(),delivered,status,generalNote:document.getElementById("fGeneralNote").value},data.length);
+    data.push(p); selectedId=id; saveParticipantNow(p);
+  }
+  cacheData(); closeModal(); render();
+}
+function deleteParticipant(id){
+  const index=data.findIndex(x=>x.id===id);
+  if(index===-1) return false;
+  const p=data[index];
+  if(!confirm(`¿Eliminar a "${p.name}"? Esta acción no se puede deshacer.`)) return false;
+  data.splice(index,1);
+  if(selectedId===id) selectedId=data[index]?.id || data[index-1]?.id || data[0]?.id || null;
+  clearTimeout(saveTimers.get(id)); saveTimers.delete(id);
+  deleteParticipantRemote(id);
+  cacheData(); render(); showToast("Participante eliminado de Google Sheets");
+  return true;
+}
+function showToast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._timer);t._timer=setTimeout(()=>t.classList.remove("show"),1800);
+}
+function saveHtml(){
+  const source=document.documentElement.outerHTML;
+  const replacement=`const INITIAL_DATA = ${JSON.stringify(data,null,2)};`;
+  const updated=source.replace(/const INITIAL_DATA = [\\s\\S]*?;\\s*const JUDGES =/,replacement+"\nconst JUDGES =");
+  const blob=new Blob(["<!DOCTYPE html>\n"+updated],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="Dashboard_Big_Loquendo_House_IV_Ronda_2.html";a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+  localStorage.setItem(LS_KEY,JSON.stringify(data));showToast("HTML actualizado y descargado");
+}
+
+document.querySelectorAll(".filter").forEach(b=>b.addEventListener("click",()=>{document.querySelectorAll(".filter").forEach(x=>x.classList.remove("active"));b.classList.add("active");activeFilter=b.dataset.filter;renderTable();}));
+document.getElementById("search").addEventListener("input",renderTable);
+document.getElementById("statusFilter").addEventListener("change",renderTable);
+document.getElementById("judgeSelector").value=currentJudge;
+document.getElementById("judgeSelector").addEventListener("change",e=>{currentJudge=e.target.value;localStorage.setItem("blh4_current_judge",currentJudge);renderDetail();showToast(`Juez activo: ${currentJudge}`);});
+document.getElementById("addBtn").addEventListener("click",()=>openModal());
+document.getElementById("closeModal").addEventListener("click",closeModal);
+document.getElementById("cancelModal").addEventListener("click",closeModal);
+document.getElementById("saveParticipant").addEventListener("click",saveModal);
+document.getElementById("deleteFromModal").addEventListener("click",()=>{
+  if(!editingId) return;
+  if(deleteParticipant(editingId)) closeModal();
+});
+document.getElementById("saveBtn").addEventListener("click",saveHtml);
+document.getElementById("resetBtn").addEventListener("click",()=>{
+  if(!confirm("Esto cargará de nuevo los datos iniciales en este navegador y los enviará a Google Sheets. ¿Continuar?"))return;
+  data=deepClone(INITIAL_DATA).map(normalizeParticipant); selectedId=data[0]?.id||null; cacheData(); seedInitialData(); render(); showToast("Datos iniciales enviados a Google Sheets");
+});
+document.getElementById("modalBackdrop").addEventListener("click",e=>{if(e.target.id==="modalBackdrop")closeModal();});
+window.addEventListener("beforeunload",()=>cacheData());
+
+render();
+loadRemoteData(true).finally(startPolling);
+</script>
+</body>
+</html>
